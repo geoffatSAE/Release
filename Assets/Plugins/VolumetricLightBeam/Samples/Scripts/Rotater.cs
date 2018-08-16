@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace VLB.Samples
+namespace VLB_Samples
 {
     public class Rotater : MonoBehaviour
     {

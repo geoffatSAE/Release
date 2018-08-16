@@ -3,7 +3,7 @@
 using UnityEditor;
 #endif
 
-namespace VLB.Samples
+namespace VLB_Samples
 {
     public class LightGenerator : MonoBehaviour
     {
@@ -24,14 +24,14 @@ namespace VLB.Samples
                 {
                     GameObject gao = null;
                     if(AddLight)
-                        gao = new GameObject("Light_" + i + "_" + j, typeof(Light), typeof(VolumetricLightBeam), typeof(Rotater));
+                        gao = new GameObject("Light_" + i + "_" + j, typeof(Light), typeof(VLB.VolumetricLightBeam), typeof(Rotater));
                     else
-                        gao = new GameObject("Light_" + i + "_" + j, typeof(VolumetricLightBeam), typeof(Rotater));
+                        gao = new GameObject("Light_" + i + "_" + j, typeof(VLB.VolumetricLightBeam), typeof(Rotater));
 
                     gao.transform.position = new Vector3(i * OffsetUnits, PositionY, j * OffsetUnits);
                     gao.transform.rotation = Quaternion.Euler(Random.Range(-45, 45) + 90f, Random.Range(0, 360), 0);
 
-                    var beam = gao.GetComponent<VolumetricLightBeam>();
+                    var beam = gao.GetComponent<VLB.VolumetricLightBeam>();
                
                     if (AddLight)
                     {

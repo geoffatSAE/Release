@@ -75,15 +75,20 @@ namespace VLB
             plane.distance += Vector3.Dot(translation.normalized, plane.normal) * translation.magnitude;
             return plane;
         }
-        
-        public static Matrix4x4 SampleInMatrix(this Gradient self)
+
+        public static bool IsValid(this Plane plane)
+        {
+            return plane.normal.sqrMagnitude > 0.5f;
+        }
+
+        public static Matrix4x4 SampleInMatrix(this Gradient self, int floatPackingPrecision)
         {
             const int kSamplesCount = 16;
             var mat = new Matrix4x4();
             for (int i = 0; i < kSamplesCount; ++i)
             {
                 var color = self.Evaluate(Mathf.Clamp01((float)(i) / (kSamplesCount - 1)));
-                mat[i] = color.PackToFloat();
+                mat[i] = color.PackToFloat(floatPackingPrecision);
             }
             return mat;
         }
@@ -98,19 +103,35 @@ namespace VLB
 
         static Vector4 Vector4_Floor(Vector4 vec) { return new Vector4(Mathf.Floor(vec.x), Mathf.Floor(vec.y), Mathf.Floor(vec.z), Mathf.Floor(vec.w)); }
 
-        const int PACKING_PRECISION = 64;
-        public static float PackToFloat(this Color color)
+        public static float PackToFloat(this Color color, int floatPackingPrecision)
         {
-            Vector4 iVal = Vector4_Floor(color * (PACKING_PRECISION - 1));
+            Vector4 iVal = Vector4_Floor(color * (floatPackingPrecision - 1));
 
             float output = 0;
 
-            output += iVal.x * PACKING_PRECISION * PACKING_PRECISION * PACKING_PRECISION;
-            output += iVal.y * PACKING_PRECISION * PACKING_PRECISION;
-            output += iVal.z * PACKING_PRECISION;
+            output += iVal.x * floatPackingPrecision * floatPackingPrecision * floatPackingPrecision;
+            output += iVal.y * floatPackingPrecision * floatPackingPrecision;
+            output += iVal.z * floatPackingPrecision;
             output += iVal.w;
 
             return output;
+        }
+
+        public enum FloatPackingPrecision { High = 64, Low = 8, Undef = 0 }
+        static FloatPackingPrecision ms_FloatPackingPrecision = FloatPackingPrecision.Undef;
+
+        // OpenGL ES 2.0 GPU (graphicsShaderLevel = 30) usually have low float precision (16 bits on fragments)
+        // So we lower the float packing precision on them (8 seems fine on Adreno (TM) 220, NVIDIA Tegra 3 and on Mali-450 MP)
+        // https://docs.unity3d.com/Manual/SL-DataTypesAndPrecision.html
+        const int kFloatPackingHighMinShaderLevel = 35;
+
+        public static FloatPackingPrecision GetFloatPackingPrecision()
+        {
+            if (ms_FloatPackingPrecision == FloatPackingPrecision.Undef)
+            {
+                ms_FloatPackingPrecision = SystemInfo.graphicsShaderLevel >= kFloatPackingHighMinShaderLevel ? FloatPackingPrecision.High : FloatPackingPrecision.Low;
+            }
+            return ms_FloatPackingPrecision;
         }
     }
 

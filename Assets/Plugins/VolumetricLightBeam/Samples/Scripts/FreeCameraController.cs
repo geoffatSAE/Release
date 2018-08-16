@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
-using System.Collections;
 
-namespace VLB.Samples
+namespace VLB_Samples
 {
     public class FreeCameraController : MonoBehaviour
     {

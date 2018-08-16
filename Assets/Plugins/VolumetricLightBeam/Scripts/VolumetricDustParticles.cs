@@ -215,7 +215,7 @@ namespace VLB
                 
                 var startColor = main.startColor;
 
-                if(m_Master.colorMode == VolumetricLightBeam.ColorMode.Flat)
+                if(m_Master.colorMode == ColorMode.Flat)
                 {
                     startColor.mode = ParticleSystemGradientMode.Color;
                     var colorMax = m_Master.color;

@@ -31,7 +31,7 @@ namespace VLB
             Header("Raycasting");
             EditorGUILayout.PropertyField(layerMask, new GUIContent("Layer Mask", "On which layers the beam will perform raycasts to check for colliders.\nTry to set it as restrictive as possible (checking only the layers which are necessary) to perform more efficient raycasts in order to increase the performance."));
             EditorGUILayout.PropertyField(minOccluderArea, new GUIContent("Min Occluder Area", "Minimum 'area' of the collider to become an occluder.\nColliders smaller than this value will not block the beam."));
-            EditorGUILayout.PropertyField(waitFrameCount, new GUIContent("Wait frame count", "How many frames we wait between 2 occlusion tests?\nIf you want your beam to be super responsive to the changes of your environment, update it every frame but setting 1.\nIf you want to save on performance, we recommend to wait few frames between each update by setting a higher value."));
+            EditorGUILayout.PropertyField(waitFrameCount, new GUIContent("Wait frame count", "How many frames we wait between 2 occlusion tests?\nIf you want your beam to be super responsive to the changes of your environment, update it every frame by setting 1.\nIf you want to save on performance, we recommend to wait few frames between each update by setting a higher value."));
 
             Header("Clipping Plane");
             EditorGUILayout.PropertyField(planeAlignment, new GUIContent("Alignment", "Alignment of the computed clipping plane:\n- Surface: align to the surface normal which blocks the beam. Works better for large occluders such as floors and walls.\n- Beam: keep the plane aligned with the beam direction. Works better with more complex occluders or with corners."));

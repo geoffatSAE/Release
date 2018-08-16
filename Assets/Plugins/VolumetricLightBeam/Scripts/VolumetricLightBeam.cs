@@ -17,12 +17,10 @@ namespace VLB
         /// </summary>
         public bool colorFromLight = true;
 
-        public enum ColorMode { Flat, Gradient }
-
         /// <summary>
         /// Apply a flat/plain/single color, or a gradient
         /// </summary>
-        public ColorMode colorMode = Consts.ColorMode;
+        public ColorMode colorMode = Consts.ColorModeDefault;
 
         /// <summary>
         /// RGBA plain color, if colorMode is Flat (takes account of the alpha value).
@@ -41,10 +39,20 @@ namespace VLB
         public Gradient colorGradient;
 
         /// <summary>
-        /// Modulate the opacity of the geometry of the beam. Is multiplied to Color's Flat or Gradient alpha.
+        /// Modulate the opacity of the inside geometry of the beam. Is multiplied to Color's alpha.
         /// </summary>
-        [FormerlySerializedAs("alphaOutside")]
-        [Range(0f, 1f)] public float alpha = Consts.Alpha;
+        [Range(0f, 1f)] public float alphaInside = Consts.Alpha;
+
+        /// <summary>
+        /// Modulate the opacity of the outside geometry of the beam. Is multiplied to Color's alpha.
+        /// </summary>
+        [FormerlySerializedAs("alpha")]
+        [Range(0f, 1f)] public float alphaOutside = Consts.Alpha;
+
+        /// <summary>
+        /// Change how the light beam colors will be mixed with the scene
+        /// </summary>
+        public BlendingMode blendingMode = Consts.BlendingModeDefault;
 
         /// <summary>
         /// Get the spotAngle value from the light (when attached to a Spotlight) or not
@@ -107,17 +115,10 @@ namespace VLB
         /// </summary>
         public bool fadeEndFromLight = true;
 
-        public enum AttenuationEquation
-        {
-            Linear = 0,     // Simple linear attenuation.
-            Quadratic = 1,  // Quadratic attenuation, which usually gives more realistic results.
-            Blend = 2       // Custom blending mix between linear and quadratic attenuation formulas. Use attenuationEquation property to tweak the mix.
-        }
-
         /// <summary>
         /// Light attenuation formula used to compute fading between 'fadeStart' and 'fadeEnd'
         /// </summary>
-        public AttenuationEquation attenuationEquation = Consts.AttenuationEquation;
+        public AttenuationEquation attenuationEquation = Consts.AttenuationEquationDefault;
 
         /// <summary>
         /// Custom blending mix between linear and quadratic attenuation formulas.
@@ -274,11 +275,28 @@ namespace VLB
         /// <summary> Bounds of the geometry's mesh (if the geometry exists) </summary>
         public Bounds bounds { get { return m_BeamGeom != null ? m_BeamGeom.meshRenderer.bounds : new Bounds(Vector3.zero, Vector3.zero); } }
 
+        Plane m_PlaneWS;
+
         /// <summary> Set the clipping plane equation. This function is used internally by the DynamicOcclusion component. </summary>
-        public void SetClippingPlane(Plane planeWS) { if (m_BeamGeom) m_BeamGeom.SetClippingPlane(planeWS); }
+        public void SetClippingPlane(Plane planeWS) { if (m_BeamGeom) m_BeamGeom.SetClippingPlane(planeWS); m_PlaneWS = planeWS; }
 
         /// <summary> Disable the clipping plane. This function is used internally by the DynamicOcclusion component. </summary>
-        public void SetClippingPlaneOff() { if (m_BeamGeom) m_BeamGeom.SetClippingPlaneOff(); }
+        public void SetClippingPlaneOff() { if (m_BeamGeom) m_BeamGeom.SetClippingPlaneOff(); m_PlaneWS = new Plane(); }
+
+
+        public bool IsColliderHiddenByDynamicOccluder(Collider collider)
+        {
+            Debug.Assert(collider, "You should pass a valid Collider to VLB.VolumetricLightBeam.IsColliderHiddenByDynamicOccluder");
+
+            if (!m_PlaneWS.IsValid())
+                return false;
+
+            var isInside = GeometryUtility.TestPlanesAABB(new Plane[] { m_PlaneWS }, collider.bounds);
+            return !isInside;
+        }
+
+
+        public int blendingModeAsInt { get { return Mathf.Clamp((int)blendingMode, 0, System.Enum.GetValues(typeof(BlendingMode)).Length); } }
 
         // INTERNAL
 #pragma warning disable 0414
@@ -480,11 +498,13 @@ namespace VLB
 
         public void Reset()
         {
-            colorMode = Consts.ColorMode;
+            colorMode = Consts.ColorModeDefault;
             color = Consts.FlatColor;
             colorFromLight = true;
 
-            alpha = Consts.Alpha;
+            alphaInside = Consts.Alpha;
+            alphaOutside = Consts.Alpha;
+            blendingMode = Consts.BlendingModeDefault;
 
             spotAngleFromLight = true;
             spotAngle = Consts.SpotAngleDefault;
@@ -492,6 +512,9 @@ namespace VLB
             coneRadiusStart = Consts.ConeRadiusStart;
             geomSides = Consts.GeomSidesDefault;
             geomCap = Consts.GeomCap;
+
+            attenuationEquation = Consts.AttenuationEquationDefault;
+            attenuationCustomBlending = Consts.AttenuationCustomBlending;
 
             fadeEndFromLight = true;
             fadeStart = Consts.FadeStart;
@@ -573,7 +596,9 @@ namespace VLB
 
         void ClampProperties()
         {
-            alpha = Mathf.Clamp01(alpha);
+            alphaInside = Mathf.Clamp01(alphaInside);
+            alphaOutside = Mathf.Clamp01(alphaOutside);
+
             attenuationCustomBlending = Mathf.Clamp01(attenuationCustomBlending);
 
             fadeEnd = Mathf.Max(Consts.FadeMinThreshold, fadeEnd);

@@ -135,24 +135,36 @@ namespace VLB
             material.SetVector("_ConeRadius", coneRadius);
             material.SetFloat("_ConeApexOffsetZ", m_Master.coneApexOffsetZ);
 
-            if (m_Master.colorMode == VolumetricLightBeam.ColorMode.Gradient)
+            if (m_Master.colorMode == ColorMode.Gradient)
             {
-                material.EnableKeyword("VLB_COLOR_GRADIENT_MATRIX");
-                m_ColorGradientMatrix = m_Master.colorGradient.SampleInMatrix();
+                var precision = Utils.GetFloatPackingPrecision();
+                material.EnableKeyword(precision == Utils.FloatPackingPrecision.High ? "VLB_COLOR_GRADIENT_MATRIX_HIGH" : "VLB_COLOR_GRADIENT_MATRIX_LOW");
+                m_ColorGradientMatrix = m_Master.colorGradient.SampleInMatrix((int)precision);
                 // pass the gradient matrix in OnWillRenderObject()
             }
             else
             {
-                material.DisableKeyword("VLB_COLOR_GRADIENT_MATRIX");
+                material.DisableKeyword("VLB_COLOR_GRADIENT_MATRIX_HIGH");
+                material.DisableKeyword("VLB_COLOR_GRADIENT_MATRIX_LOW");
                 material.SetColor("_ColorFlat", m_Master.color);
             }
 
-            material.SetFloat("_Alpha", m_Master.alpha);
+            // Blending Mode
+            if(Consts.BlendingMode_AlphaAsBlack[m_Master.blendingModeAsInt])
+                material.EnableKeyword("ALPHA_AS_BLACK");
+            else
+                material.DisableKeyword("ALPHA_AS_BLACK");
+
+            material.SetInt("_BlendSrcFactor", (int)Consts.BlendingMode_SrcFactor[m_Master.blendingModeAsInt]);
+            material.SetInt("_BlendDstFactor", (int)Consts.BlendingMode_DstFactor[m_Master.blendingModeAsInt]);
+
+            material.SetFloat("_AlphaInside", m_Master.alphaInside);
+            material.SetFloat("_AlphaOutside", m_Master.alphaOutside);
             material.SetFloat("_AttenuationLerpLinearQuad", m_Master.attenuationLerpLinearQuad);
             material.SetFloat("_DistanceFadeStart", m_Master.fadeStart);
             material.SetFloat("_DistanceFadeEnd", m_Master.fadeEnd);
             material.SetFloat("_DistanceCamClipping", m_Master.cameraClippingDistance);
-            material.SetFloat("_FresnelPow", m_Master.fresnelPow);
+            material.SetFloat("_FresnelPow", Mathf.Max(0.001f, m_Master.fresnelPow)); // no pow 0, otherwise will generate inf fresnel and issues on iOS
             material.SetFloat("_GlareBehind",  m_Master.glareBehind);
             material.SetFloat("_GlareFrontal",  m_Master.glareFrontal);
 
@@ -241,7 +253,7 @@ namespace VLB
                     float camIsInsideBeamFactor = cam.orthographic ? -1f : m_Master.GetInsideBeamFactor(cam.transform.position);
                     material.SetVector("_CameraParams", new Vector4(camForwardVectorOSN.x, camForwardVectorOSN.y, camForwardVectorOSN.z, camIsInsideBeamFactor));
 
-                    if (m_Master.colorMode == VolumetricLightBeam.ColorMode.Gradient)
+                    if (m_Master.colorMode == ColorMode.Gradient)
                     {
                         // Send the gradient matrix every frame since it's not a shader's property
                         material.SetMatrix("_ColorGradientMatrix", m_ColorGradientMatrix);

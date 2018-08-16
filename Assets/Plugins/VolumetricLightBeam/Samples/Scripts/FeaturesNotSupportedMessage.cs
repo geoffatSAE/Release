@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-namespace VLB.Samples
+namespace VLB_Samples
 {
     [RequireComponent(typeof(Text))]
     public class FeaturesNotSupportedMessage : MonoBehaviour
@@ -10,7 +10,7 @@ namespace VLB.Samples
         {
             var textUI = GetComponent<Text>();
             Debug.Assert(textUI);
-            textUI.text = Noise3D.isSupported ? "" : Noise3D.isNotSupportedString;
+            textUI.text = VLB.Noise3D.isSupported ? "" : VLB.Noise3D.isNotSupportedString;
         }
     }
 }

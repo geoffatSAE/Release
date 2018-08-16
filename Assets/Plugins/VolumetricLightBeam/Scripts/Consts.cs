@@ -8,13 +8,14 @@ namespace VLB
         public const string HelpUrlBeam = HelpUrlBase + "comp-lightbeam/";
         public const string HelpUrlDustParticles = HelpUrlBase + "comp-dustparticles/";
         public const string HelpUrlDynamicOcclusion = HelpUrlBase + "comp-dynocclusion/";
+        public const string HelpUrlTriggerZone = HelpUrlBase + "comp-triggerzone/";
         public const string HelpUrlConfig = HelpUrlBase + "config/";
 
-        public static bool ProceduralObjectsVisibleInEditor = true;
+        public static readonly bool ProceduralObjectsVisibleInEditor = true;
         public static HideFlags ProceduralObjectsHideFlags { get { return ProceduralObjectsVisibleInEditor ? (HideFlags.NotEditable | HideFlags.DontSave) : (HideFlags.HideAndDontSave); } }
 
-        public static Color FlatColor = Color.white;
-        public const VolumetricLightBeam.ColorMode ColorMode = VolumetricLightBeam.ColorMode.Flat;
+        public static readonly Color FlatColor = Color.white;
+        public const ColorMode ColorModeDefault = ColorMode.Flat;
 
         public const float Alpha = 1f;
         public const float SpotAngleDefault = 35f;
@@ -26,7 +27,7 @@ namespace VLB
         public const int GeomSidesMax = 256;
         public const bool GeomCap = false;
 
-        public const VolumetricLightBeam.AttenuationEquation AttenuationEquation = VolumetricLightBeam.AttenuationEquation.Quadratic;
+        public const AttenuationEquation AttenuationEquationDefault = AttenuationEquation.Quadratic;
         public const float AttenuationCustomBlending = 0.5f;
         public const float FadeStart = 0f;
         public const float FadeEnd = 3f;
@@ -47,6 +48,29 @@ namespace VLB
         public const float NoiseScaleMax = 2f;
         public const float NoiseScaleDefault = 0.5f;
 
-        public static Vector3 NoiseVelocityDefault = new Vector3(0.07f, 0.18f, 0.05f);
+        public static readonly Vector3 NoiseVelocityDefault = new Vector3(0.07f, 0.18f, 0.05f);
+
+        public const BlendingMode BlendingModeDefault = BlendingMode.Additive;
+
+        public static readonly UnityEngine.Rendering.BlendMode[] BlendingMode_SrcFactor = new UnityEngine.Rendering.BlendMode[3]
+        {
+            UnityEngine.Rendering.BlendMode.One,                // Additive
+            UnityEngine.Rendering.BlendMode.OneMinusDstColor,   // SoftAdditive
+            UnityEngine.Rendering.BlendMode.SrcAlpha,           // TraditionalTransparency
+        };
+
+        public static readonly UnityEngine.Rendering.BlendMode[] BlendingMode_DstFactor = new UnityEngine.Rendering.BlendMode[3]
+        {
+            UnityEngine.Rendering.BlendMode.One,                // Additive
+            UnityEngine.Rendering.BlendMode.One,                // SoftAdditive
+            UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha,   // TraditionalTransparency
+        };
+
+        public static readonly bool[] BlendingMode_AlphaAsBlack = new bool[3]
+        {
+            true,   // Additive
+            true,   // SoftAdditive
+            false,  // TraditionalTransparency
+        };
     }
 }

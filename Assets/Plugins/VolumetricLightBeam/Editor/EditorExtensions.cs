@@ -69,6 +69,14 @@ namespace VLB
                 vlb.gameObject.AddComponent<DynamicOcclusion>();
         }
 
+        [MenuItem("CONTEXT/VolumetricLightBeam/Add Trigger Zone")]
+        public static void Menu_AddTriggerZone(MenuCommand menuCommand)
+        {
+            var vlb = menuCommand.context as VolumetricLightBeam;
+            if (vlb)
+                vlb.gameObject.AddComponent<TriggerZone>();
+        }
+
         /// <summary>
         /// Add a EditorGUILayout.ToggleLeft which properly handles multi-object editing
         /// </summary>

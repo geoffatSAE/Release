@@ -49,6 +49,7 @@ namespace VLB
 
         VolumetricLightBeam m_Master = null;
         int m_FrameCountToWait = 0;
+        float m_RangeMultiplier = 1f;
 
 #if UNITY_EDITOR
         public struct EditorDebugData
@@ -96,6 +97,18 @@ namespace VLB
             SetHitNull();
         }
 
+        void Start()
+        {
+            if (Application.isPlaying)
+            {
+                var triggerZone = GetComponent<TriggerZone>();
+                if (triggerZone)
+                {
+                    m_RangeMultiplier = Mathf.Max(1f, triggerZone.rangeMultiplier);
+                }
+            }
+        }
+
         void LateUpdate()
         {
 #if UNITY_EDITOR
@@ -128,12 +141,15 @@ namespace VLB
         RaycastHit GetBestHit()
         {
             var forward = transform.forward;
-            var hits = Physics.RaycastAll(transform.position, forward, m_Master.fadeEnd, layerMask.value);
+            var hits = Physics.RaycastAll(transform.position, forward, m_Master.fadeEnd * m_RangeMultiplier, layerMask.value);
 
             int bestHit = -1;
             float bestLength = float.MaxValue;
             for (int i = 0; i < hits.Length; ++i)
             {
+                if (hits[i].collider.isTrigger) // do not query triggers
+                    continue;
+
                 if (hits[i].collider.bounds.GetMaxArea2D() >= minOccluderArea)
                 {
                     if (hits[i].distance < bestLength)
@@ -208,17 +224,16 @@ namespace VLB
         }
 
 #if UNITY_EDITOR
-        Vector3 m_EditorPlaneNormal;
-        float m_EditorPlaneDistance;
+        Plane m_DebugPlaneLocal;
 
         void SetDebugPlane(Plane planeWS)
         {
-            m_EditorPlaneNormal = planeWS.normal;
-            if (m_EditorPlaneNormal.sqrMagnitude > 0.5f)
+            m_DebugPlaneLocal = planeWS;
+            if (planeWS.IsValid())
             {
                 float dist;
                 if (planeWS.Raycast(new Ray(transform.position, transform.forward), out dist))
-                    m_EditorPlaneDistance = dist;
+                    m_DebugPlaneLocal.distance = dist; // compute local distance
             }
         }
 
@@ -227,12 +242,12 @@ namespace VLB
             if (!editorShowDebugPlane)
                 return;
 
-            if (m_EditorPlaneNormal.sqrMagnitude > 0.5f)
+            if (m_DebugPlaneLocal.IsValid())
                 Utils.GizmosDrawPlane(
-                    m_EditorPlaneNormal,
-                    transform.position + m_EditorPlaneDistance * transform.forward,
+                    m_DebugPlaneLocal.normal,
+                    transform.position + m_DebugPlaneLocal.distance * transform.forward,
                     m_Master.color.Opaque(),
-                    Mathf.Lerp(m_Master.coneRadiusStart, m_Master.coneRadiusEnd, Mathf.InverseLerp(0f, m_Master.fadeEnd, m_EditorPlaneDistance)));
+                    Mathf.Lerp(m_Master.coneRadiusStart, m_Master.coneRadiusEnd, Mathf.InverseLerp(0f, m_Master.fadeEnd, m_DebugPlaneLocal.distance)));
         }
 #endif
     }
