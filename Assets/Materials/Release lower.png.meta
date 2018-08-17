@@ -122,7 +122,7 @@ TextureImporter:
     indices: 
     edges: []
     weights: []
-  spritePackingTag: Sprite_Type_UI
+  spritePackingTag: UI
   userData: 
   assetBundleName: 
   assetBundleVariant: 
