@@ -18,7 +18,7 @@ public class FlowerGrower : MonoBehaviour {
 
         TimeToGrow = +Time.deltaTime;
 
-        transform.localScale += new Vector3(TimeToGrow / 30f, TimeToGrow / 30f, TimeToGrow / 30f);
+        transform.localScale += new Vector3(TimeToGrow / 3000f, TimeToGrow / 3000f, TimeToGrow / 3000f);
 
 	}
 }

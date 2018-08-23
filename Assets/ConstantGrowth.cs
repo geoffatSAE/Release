@@ -16,7 +16,7 @@ public class ConstantGrowth : MonoBehaviour {
 
         TimeToGrow = +Time.deltaTime;
 
-        transform.localScale += new Vector3(TimeToGrow / 60f, TimeToGrow / 60, TimeToGrow / 60);
+        transform.localScale += new Vector3(TimeToGrow / 6000f, TimeToGrow / 6000, TimeToGrow / 6000);
 
     }
 }
